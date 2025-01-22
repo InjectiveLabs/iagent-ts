@@ -1,6 +1,6 @@
 {
-	"name": "@elizaos/agent",
-	"version": "0.1.9-alpha.1",
+	"name": "@injectivelabs/iagent",
+	"version": "2.0.0",
 	"main": "src/index.ts",
 	"type": "module",
 	"scripts": {
