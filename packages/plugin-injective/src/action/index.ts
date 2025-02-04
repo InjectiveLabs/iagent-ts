@@ -33,22 +33,22 @@ export * from "./token-factory";
 export * from "./wasm";
 
 export const InjectiveActions = [
-	...ExchangeActions,
-	...AuctionActions,
-	...AuthActions,
-	...BankActions,
-	...DistributionActions,
-	...ExplorerActions,
-	...GovActions,
-	...IbcActions,
-	...InsuranceActions,
-	...MintActions,
-	...MitoActions,
-	...PeggyActions,
-	...PermissionsActions,
-	...StakingActions,
-	...TokenFactoryActions,
-	...WasmActions,
+    ...ExchangeActions,
+    ...AuctionActions,
+    ...AuthActions,
+    ...BankActions,
+    ...DistributionActions,
+    ...ExplorerActions,
+    ...GovActions,
+    ...IbcActions,
+    ...InsuranceActions,
+    ...MintActions,
+    ...MitoActions,
+    ...PeggyActions,
+    ...PermissionsActions,
+    ...StakingActions,
+    ...TokenFactoryActions,
+    ...WasmActions,
 ];
 
 export default InjectiveActions;

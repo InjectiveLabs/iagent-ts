@@ -16,12 +16,10 @@ vi.mock("@lens-protocol/client", async () => {
 				generateChallenge: vi
 					.fn()
 					.mockResolvedValue({ id: "challenge-id", text: "challenge-text" }),
-				authenticate: vi
-					.fn()
-					.mockResolvedValue({
-						accessToken: "mock-token",
-						refreshToken: "mock-refresh",
-					}),
+				authenticate: vi.fn().mockResolvedValue({
+					accessToken: "mock-token",
+					refreshToken: "mock-refresh",
+				}),
 			},
 			profile: {
 				fetch: vi.fn().mockResolvedValue({

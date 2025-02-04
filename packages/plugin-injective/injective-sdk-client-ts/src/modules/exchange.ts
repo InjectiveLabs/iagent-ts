@@ -1,18 +1,6 @@
 import type { InjectiveGrpcBase } from "../grpc/grpc-base";
 import {
-	BinaryOptionsMarket,
-	DerivativeLimitOrder,
-	DerivativeOrderHistory,
-	Position,
-	PositionV2,
-	DerivativeTrade,
-	FundingPayment,
-	FundingRate,
 	type ExchangePagination,
-	SubaccountTransfer,
-	SpotLimitOrder,
-	SpotOrderHistory,
-	SpotTrade,
 	type AtomicSwap,
 	MsgAdminUpdateBinaryOptionsMarket,
 	MsgBatchCancelBinaryOptionsOrders,

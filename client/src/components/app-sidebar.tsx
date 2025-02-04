@@ -44,7 +44,9 @@ export function AppSidebar() {
 								/>
 
 								<div className="flex flex-col gap-0.5 leading-none">
-									<span className="font-semibold">iAgent powered by ElizaOS</span>
+									<span className="font-semibold">
+										iAgent powered by ElizaOS
+									</span>
 									<span className="">v{info?.version}</span>
 								</div>
 							</NavLink>

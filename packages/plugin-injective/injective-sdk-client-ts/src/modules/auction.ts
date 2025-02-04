@@ -7,7 +7,7 @@ import {
 	createErrorResponse,
 } from "../types/index";
 import { INJ_DENOM } from "@injectivelabs/utils";
-
+import { Coin } from "@injectivelabs/ts-types";
 /**
  * Fetches the auction module parameters.
  *
@@ -37,8 +37,17 @@ export async function getAuctionModuleState(
 ): Promise<StandardResponse> {
 	try {
 		const result = await this.chainGrpcAuctionApi.fetchModuleState();
-
-		return createSuccessResponse(result);
+        const bidAmount : Coin =
+        {
+        amount : result.highestBid?.amount || "0",
+        denom: INJ_DENOM
+    };
+		return createSuccessResponse({...result,
+            highestBid: {
+                bidder:result.highestBid?.bidder,
+                amount: this.convertChainDataToHumanReadable([bidAmount])[0].amount
+            }
+        });
 	} catch (err) {
 		return createErrorResponse("getAuctionModuleStateError", err);
 	}
@@ -56,7 +65,10 @@ export async function getCurrentBasket(
 	try {
 		const result = await this.chainGrpcAuctionApi.fetchCurrentBasket();
 
-		return createSuccessResponse(result);
+		return createSuccessResponse({...result,
+            amountList: this.convertChainDataToHumanReadable(result.amountList)
+        }
+        );
 	} catch (err) {
 		return createErrorResponse("getCurrentBasketError", err);
 	}
@@ -112,11 +124,12 @@ export async function msgBid(
 	params: AuctionTypes.MsgBidRequestParams,
 ): Promise<StandardResponse> {
 	try {
-		const amount = { denom: INJ_DENOM, amount: params.amount };
+		const amount : Coin = { denom: INJ_DENOM, amount: params.amount };
+        const chainAmount = this.convertHumanReadableToChain([amount])[0];
 		const msg = MsgBid.fromJSON({
 			round: params.round,
 			injectiveAddress: this.injAddress,
-			amount: amount,
+			amount: chainAmount,
 		});
 		const result = await this.msgBroadcaster.broadcast({ msgs: msg });
 		return createSuccessResponse(result);

@@ -46,7 +46,8 @@ import {
 	getInjectiveAddress,
 	getEthereumAddress,
 } from "@injectivelabs/sdk-ts";
-
+import { TokenFactory } from "@injectivelabs/token-metadata";
+import { Coin } from "@injectivelabs/ts-types";
 export type RequestMethod<TRequest, TResponse> = (
 	request: TRequest,
 ) => Promise<TResponse>;
@@ -111,6 +112,8 @@ export class InjectiveGrpcBase {
 	protected readonly injAddress: string;
 	private privateKey: string;
 	protected msgBroadcaster!: MsgBroadcasterWithPk;
+	//Add the tokenFactory here
+	public tokenFactory: TokenFactory;
 	constructor(
 		protected readonly networkType: keyof typeof Network = "Mainnet",
 		protected readonly injectivePrivateKey: string,
@@ -210,6 +213,8 @@ export class InjectiveGrpcBase {
 			network: this.network,
 			privateKey: this.privateKey,
 		});
+
+		this.tokenFactory = TokenFactory.make(this.network);
 	}
 	/**
 	 * Get network configuration
@@ -234,4 +239,31 @@ export class InjectiveGrpcBase {
 			return false;
 		}
 	}
+
+    protected convertChainDataToHumanReadable(data: Coin[]): Coin[] {
+        return data.map((coin) => {
+            const token = this.tokenFactory.toToken(coin.denom);
+            return {
+                ...coin,
+                amount: (
+                    Number.parseInt(coin.amount) /
+                    10 ** (token?.decimals || 18)
+                ).toString(),
+            };
+        });
+    }
+
+    protected convertHumanReadableToChain(data: Coin[]): Coin[] {
+        return data.map((coin) => {
+            const token = this.tokenFactory.toToken(coin.denom);
+            return {
+                ...coin,
+                amount: (
+                    Number.parseInt(coin.amount) *
+                    10 ** (token?.decimals || 18)
+                ).toString(),
+            };
+        });
+    }
+
 }
