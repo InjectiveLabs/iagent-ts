@@ -35,28 +35,28 @@ import { names, uniqueNamesGenerator } from "unique-names-generator";
  */
 
 export const composeContext = ({
-	state,
-	template,
-	templatingEngine,
+    state,
+    template,
+    templatingEngine,
 }: {
-	state: State;
-	template: TemplateType;
-	templatingEngine?: "handlebars";
+    state: State;
+    template: TemplateType;
+    templatingEngine?: "handlebars";
 }) => {
-	const templateStr =
-		typeof template === "function" ? template({ state }) : template;
+    const templateStr =
+        typeof template === "function" ? template({ state }) : template;
 
-	if (templatingEngine === "handlebars") {
-		const templateFunction = handlebars.compile(templateStr);
-		return templateFunction(state);
-	}
+    if (templatingEngine === "handlebars") {
+        const templateFunction = handlebars.compile(templateStr);
+        return templateFunction(state);
+    }
 
-	// @ts-expect-error match isn't working as expected
-	const out = templateStr.replace(/{{\w+}}/g, (match) => {
-		const key = match.replace(/{{|}}/g, "");
-		return state[key] ?? "";
-	});
-	return out;
+    // @ts-expect-error match isn't working as expected
+    const out = templateStr.replace(/{{\w+}}/g, (match) => {
+        const key = match.replace(/{{|}}/g, "");
+        return state[key] ?? "";
+    });
+    return out;
 };
 
 /**
@@ -79,7 +79,7 @@ export const composeContext = ({
  * const text = addHeader(header, body);
  */
 export const addHeader = (header: string, body: string) => {
-	return body.length > 0 ? `${header ? header + "\n" : header}${body}\n` : "";
+    return body.length > 0 ? `${header ? header + "\n" : header}${body}\n` : "";
 };
 
 /**
@@ -103,13 +103,13 @@ export const addHeader = (header: string, body: string) => {
  * const result = composeRandomUser({ template, length });
  */
 export const composeRandomUser = (template: string, length: number) => {
-	const exampleNames = Array.from({ length }, () =>
-		uniqueNamesGenerator({ dictionaries: [names] }),
-	);
-	let result = template;
-	for (let i = 0; i < exampleNames.length; i++) {
-		result = result.replaceAll(`{{user${i + 1}}}`, exampleNames[i]);
-	}
+    const exampleNames = Array.from({ length }, () =>
+        uniqueNamesGenerator({ dictionaries: [names] })
+    );
+    let result = template;
+    for (let i = 0; i < exampleNames.length; i++) {
+        result = result.replaceAll(`{{user${i + 1}}}`, exampleNames[i]);
+    }
 
-	return result;
+    return result;
 };
