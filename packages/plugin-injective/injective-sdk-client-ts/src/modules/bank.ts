@@ -1,11 +1,13 @@
 import type { InjectiveGrpcBase } from "../grpc/grpc-base";
 import { MsgSend, MsgMultiSend } from "@injectivelabs/sdk-ts";
+import { tokenFactory, TokenFactory } from "@injectivelabs/token-metadata";
 import type * as BankTypes from "../types/bank";
 import {
-	type StandardResponse,
-	createSuccessResponse,
-	createErrorResponse,
+    type StandardResponse,
+    createSuccessResponse,
+    createErrorResponse,
 } from "../types/index";
+import { Network } from "@injectivelabs/networks";
 
 // Bank Module Chain GRPC Async Functions with Error Handling
 
@@ -16,15 +18,15 @@ import {
  * @returns {Promise<StandardResponse>} The standard response containing module parameters or an error.
  */
 export async function getBankModuleParams(
-	this: InjectiveGrpcBase,
+    this: InjectiveGrpcBase,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchModuleParams();
+    try {
+        const result = await this.chainGrpcBankApi.fetchModuleParams();
 
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getBankModuleParamsError", err);
-	}
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("getBankModuleParamsError", err);
+    }
 }
 
 /**
@@ -35,19 +37,26 @@ export async function getBankModuleParams(
  * @returns {Promise<StandardResponse>} The standard response containing the balance or an error.
  */
 export async function getBankBalance(
-	this: InjectiveGrpcBase,
-	params: BankTypes.GetBankBalanceParams,
+    this: InjectiveGrpcBase,
+    params: BankTypes.GetBankBalanceParams,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchBalance({
-			...params,
-			accountAddress: this.injAddress,
-		});
+    try {
+        const result = await this.chainGrpcBankApi.fetchBalance({
+            ...params,
+            accountAddress: this.injAddress,
+        });
 
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getBankBalanceError", err);
-	}
+        const tokenFactory = TokenFactory.make(Network.Mainnet);
+        const token = tokenFactory.toToken(result.denom);
+
+        return createSuccessResponse({
+            ...result,
+            uiAmount:
+                Number.parseInt(result.amount) / 10 ** (token?.decimals || 18),
+        });
+    } catch (err) {
+        return createErrorResponse("getBankBalanceError", err);
+    }
 }
 
 /**
@@ -58,15 +67,29 @@ export async function getBankBalance(
  * @returns {Promise<StandardResponse>} The standard response containing all balances or an error.
  */
 export async function getBankBalances(
-	this: InjectiveGrpcBase,
-	params: BankTypes.GetBankBalancesParams,
+    this: InjectiveGrpcBase,
+    params: BankTypes.GetBankBalancesParams,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchBalances(this.injAddress);
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getBankBalancesError", err);
-	}
+    try {
+        const result = await this.chainGrpcBankApi.fetchBalances(
+            this.injAddress,
+        );
+        const tokenFactory = TokenFactory.make(Network.Mainnet);
+
+        const uiBalances = result.balances.map((balance) => {
+            const token = tokenFactory.toToken(balance.denom);
+            return {
+                ...balance,
+                uiAmount:
+                    Number.parseInt(balance.amount) /
+                    10 ** (token?.decimals || 18),
+            };
+        });
+
+        return createSuccessResponse({ ...result, balances: uiBalances });
+    } catch (err) {
+        return createErrorResponse("getBankBalancesError", err);
+    }
 }
 
 /**
@@ -76,15 +99,15 @@ export async function getBankBalances(
  * @returns {Promise<StandardResponse>} The standard response containing total supply or an error.
  */
 export async function getTotalSupply(
-	this: InjectiveGrpcBase,
+    this: InjectiveGrpcBase,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchTotalSupply();
+    try {
+        const result = await this.chainGrpcBankApi.fetchTotalSupply();
 
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getTotalSupplyError", err);
-	}
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("getTotalSupplyError", err);
+    }
 }
 
 /**
@@ -94,14 +117,14 @@ export async function getTotalSupply(
  * @returns {Promise<StandardResponse>} The standard response containing all total supplies or an error.
  */
 export async function getAllTotalSupply(
-	this: InjectiveGrpcBase,
+    this: InjectiveGrpcBase,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchAllTotalSupply();
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getAllTotalSupplyError", err);
-	}
+    try {
+        const result = await this.chainGrpcBankApi.fetchAllTotalSupply();
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("getAllTotalSupplyError", err);
+    }
 }
 
 /**
@@ -112,15 +135,15 @@ export async function getAllTotalSupply(
  * @returns {Promise<StandardResponse>} The standard response containing the supply or an error.
  */
 export async function getSupplyOf(
-	this: InjectiveGrpcBase,
-	params: BankTypes.GetSupplyOfParams,
+    this: InjectiveGrpcBase,
+    params: BankTypes.GetSupplyOfParams,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchSupplyOf(params.denom);
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getSupplyOfError", err);
-	}
+    try {
+        const result = await this.chainGrpcBankApi.fetchSupplyOf(params.denom);
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("getSupplyOfError", err);
+    }
 }
 
 /**
@@ -130,14 +153,14 @@ export async function getSupplyOf(
  * @returns {Promise<StandardResponse>} The standard response containing denomination metadata or an error.
  */
 export async function getDenomsMetadata(
-	this: InjectiveGrpcBase,
+    this: InjectiveGrpcBase,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchDenomsMetadata();
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getDenomsMetadataError", err);
-	}
+    try {
+        const result = await this.chainGrpcBankApi.fetchDenomsMetadata();
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("getDenomsMetadataError", err);
+    }
 }
 
 /**
@@ -148,15 +171,17 @@ export async function getDenomsMetadata(
  * @returns {Promise<StandardResponse>} The standard response containing denomination metadata or an error.
  */
 export async function getDenomMetadata(
-	this: InjectiveGrpcBase,
-	params: BankTypes.GetDenomMetadataParams,
+    this: InjectiveGrpcBase,
+    params: BankTypes.GetDenomMetadataParams,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchDenomMetadata(params.denom);
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getDenomMetadataError", err);
-	}
+    try {
+        const result = await this.chainGrpcBankApi.fetchDenomMetadata(
+            params.denom,
+        );
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("getDenomMetadataError", err);
+    }
 }
 
 /**
@@ -167,15 +192,17 @@ export async function getDenomMetadata(
  * @returns {Promise<StandardResponse>} The standard response containing denomination owners or an error.
  */
 export async function getDenomOwners(
-	this: InjectiveGrpcBase,
-	params: BankTypes.GetDenomOwnersParams,
+    this: InjectiveGrpcBase,
+    params: BankTypes.GetDenomOwnersParams,
 ): Promise<StandardResponse> {
-	try {
-		const result = await this.chainGrpcBankApi.fetchDenomOwners(params.denom);
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("getDenomOwnersError", err);
-	}
+    try {
+        const result = await this.chainGrpcBankApi.fetchDenomOwners(
+            params.denom,
+        );
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("getDenomOwnersError", err);
+    }
 }
 
 /**
@@ -186,20 +213,20 @@ export async function getDenomOwners(
  * @returns {Promise<StandardResponse>} The standard response containing the transaction result or an error.
  */
 export async function msgSend(
-	this: InjectiveGrpcBase,
-	params: BankTypes.MsgSendParams,
+    this: InjectiveGrpcBase,
+    params: BankTypes.MsgSendParams,
 ): Promise<StandardResponse> {
-	try {
-		const msg = MsgSend.fromJSON({
-			amount: params.amount,
-			srcInjectiveAddress: params.srcInjectiveAddress,
-			dstInjectiveAddress: params.dstInjectiveAddress,
-		});
-		const result = await this.msgBroadcaster.broadcast({ msgs: msg });
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("msgSendError", err);
-	}
+    try {
+        const msg = MsgSend.fromJSON({
+            amount: params.amount,
+            srcInjectiveAddress: params.srcInjectiveAddress,
+            dstInjectiveAddress: params.dstInjectiveAddress,
+        });
+        const result = await this.msgBroadcaster.broadcast({ msgs: msg });
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("msgSendError", err);
+    }
 }
 
 /**
@@ -210,17 +237,17 @@ export async function msgSend(
  * @returns {Promise<StandardResponse>} The standard response containing the transaction result or an error.
  */
 export async function msgMultiSend(
-	this: InjectiveGrpcBase,
-	params: BankTypes.MsgMultiSendParams,
+    this: InjectiveGrpcBase,
+    params: BankTypes.MsgMultiSendParams,
 ): Promise<StandardResponse> {
-	try {
-		const msg = MsgMultiSend.fromJSON({
-			inputs: params.inputs,
-			outputs: params.outputs,
-		});
-		const result = await this.msgBroadcaster.broadcast({ msgs: msg });
-		return createSuccessResponse(result);
-	} catch (err) {
-		return createErrorResponse("msgMultiSendError", err);
-	}
+    try {
+        const msg = MsgMultiSend.fromJSON({
+            inputs: params.inputs,
+            outputs: params.outputs,
+        });
+        const result = await this.msgBroadcaster.broadcast({ msgs: msg });
+        return createSuccessResponse(result);
+    } catch (err) {
+        return createErrorResponse("msgMultiSendError", err);
+    }
 }
